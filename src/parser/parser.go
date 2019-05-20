@@ -1,29 +1,29 @@
 package parser
 
 import (
+	"fmt"
 	"go/scanner"
 	"go/token"
 	"reflect"
 	"state"
-	//"fmt"
+	"time"
 )
 
+const tagName = "rule"
+
 type RuleParser struct {
-	rules []state.RuleExpr
+	rules     map[string][]state.RuleExpr
+	ruleCount int
+	timeout   time.Duration
 }
 
-func ParserInit(rules string) (RuleParser, error) {
-	exprs, err := rulesParser(rules)
-	if err != nil {
-		return RuleParser{}, err
-	} else {
-		rp := RuleParser{exprs}
-		return rp, nil
-	}
+func ParserInit(rules string) (*RuleParser, error) {
+	return rulesParser(rules)
 }
 
-func rulesParser(rules string) ([]state.RuleExpr, error) {
-	var exprs []state.RuleExpr
+func rulesParser(rules string) (*RuleParser, error) {
+	var exprs = make(map[string][]state.RuleExpr)
+	var count int = 0
 
 	// Initialize the scanner.
 	var s scanner.Scanner
@@ -50,14 +50,58 @@ func rulesParser(rules string) ([]state.RuleExpr, error) {
 			return nil, err
 		}
 
-		//fmt.Printf("%s,%s\n", reflect.TypeOf(curState).Name(), reflect.TypeOf(exp))
-
 		if reflect.TypeOf(curState).Name() == "StateEnd" {
-			exprs = append(exprs, exp)
+			operand := exp.GetOperand()
+			exprs[operand] = append(exprs[operand], exp)
+			count += 1
 		}
 
 		curState = newState
 	}
 
-	return exprs, nil
+	rp := &RuleParser{exprs, count, 500 * time.Millisecond}
+
+	return rp, nil
+}
+
+func (p *RuleParser) Examine(context interface{}) bool {
+	count := 0
+	ch := make(chan bool)
+
+	t := reflect.TypeOf(context)
+	val := reflect.ValueOf(context)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		tag := field.Tag.Get(tagName)
+		if _, ok := p.rules[tag]; ok {
+			go p.createExamineFn(tag, val.Field(i), ch)
+			count += 1
+		}
+		vf := val.Field(i)
+		fn := vf.MethodByName("Cmp")
+		if fn.IsValid() {
+			fmt.Println("has Cmp function")
+		} else {
+			fmt.Println("doesn't have Cmp function")
+		}
+	}
+
+	for i := 0; i < count; i++ {
+		select {
+		case rst := <-ch:
+			if !rst {
+				return false
+			}
+		case <-time.After(p.timeout):
+			return false
+		}
+	}
+
+	return true
+}
+
+func (p *RuleParser) createExamineFn(tag string, value reflect.Value, ch chan bool) func() {
+	return func() {
+		ch <- true
+	}
 }

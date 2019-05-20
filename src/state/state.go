@@ -12,6 +12,10 @@ type RuleExpr struct {
 	value     string
 }
 
+func (r RuleExpr) GetOperand() string {
+	return r.operand
+}
+
 type State interface {
 	Run(pos token.Pos, tok token.Token, lit string, exp *RuleExpr) (State, error)
 }
@@ -83,7 +87,14 @@ func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExp
 	if lit[0] != '`' || lit[len(lit)-1] != '`' {
 		return nil, errors.New(fmt.Sprintf("operation %s is not braced with '`'", lit))
 	}
+
+	val := lit[1 : len(lit)-1]
+	if val == "" {
+		return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
+	}
+
 	exp.value = lit[1 : len(lit)-1]
+
 	return StateEnd{}, nil
 }
 
