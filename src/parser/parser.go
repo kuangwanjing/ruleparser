@@ -51,7 +51,7 @@ func rulesParser(rules string) (*RuleParser, error) {
 		}
 
 		if reflect.TypeOf(curState).Name() == "StateEnd" {
-			operand := exp.GetOperand()
+			operand := exp.Operand
 			exprs[operand] = append(exprs[operand], exp)
 			count += 1
 		}
@@ -73,16 +73,9 @@ func (p *RuleParser) Examine(context interface{}) bool {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tag := field.Tag.Get(tagName)
-		if _, ok := p.rules[tag]; ok {
-			go p.createExamineFn(tag, val.Field(i), ch)
+		for _, rule := range p.rules[tag] {
+			go p.createExamineFn(rule, field.Type.Name(), val.Field(i), ch)()
 			count += 1
-		}
-		vf := val.Field(i)
-		fn := vf.MethodByName("Cmp")
-		if fn.IsValid() {
-			fmt.Println("has Cmp function")
-		} else {
-			fmt.Println("doesn't have Cmp function")
 		}
 	}
 
@@ -100,8 +93,36 @@ func (p *RuleParser) Examine(context interface{}) bool {
 	return true
 }
 
-func (p *RuleParser) createExamineFn(tag string, value reflect.Value, ch chan bool) func() {
+func (p *RuleParser) createExamineFn(rule state.RuleExpr,
+	tn string, value reflect.Value, ch chan bool) func() {
+	//op := rule.Operation
+	// basic data type:https://thorstenball.com/blog/2016/11/16/putting-eval-in-go/
+
+	if !isBasicDataType(tn) {
+		if isBasicOperation(rule.Operation) {
+			fn := value.MethodByName("Cmp")
+			if fn.IsValid() {
+				fmt.Println("has Cmp function")
+				return func() {
+					// use the value of a rule as the argument of customized comparing function
+					in := make([]reflect.Value, 1)
+					in[0] = reflect.ValueOf(rule.Value)
+					ret := fn.Call(in) // how to deal with errors?
+					retInt := ret[0].Interface().(int)
+					ch <- GetBasicOperation(rule.Operation)(retInt)
+				}
+			} else {
+				fmt.Println("doesn't have Cmp function")
+				return func() {
+					ch <- false
+				}
+			}
+		} else {
+		}
+	}
+
 	return func() {
 		ch <- true
 	}
+
 }

@@ -7,13 +7,9 @@ import (
 )
 
 type RuleExpr struct {
-	operand   string
-	operation string
-	value     string
-}
-
-func (r RuleExpr) GetOperand() string {
-	return r.operand
+	Operand   string
+	Operation string
+	Value     string
 }
 
 type State interface {
@@ -43,7 +39,7 @@ func (s StateOperand) Run(pos token.Pos, tok token.Token, lit string, exp *RuleE
 	if tok != token.IDENT {
 		return nil, errors.New(fmt.Sprintf("identifier is expected at %d", pos))
 	}
-	exp.operand = lit
+	exp.Operand = lit
 	return StateOperation{}, nil
 }
 
@@ -51,25 +47,25 @@ func (s StateOperation) Run(pos token.Pos, tok token.Token, lit string, exp *Rul
 	State, error) {
 	switch tok {
 	case token.IDENT:
-		exp.operation = lit
+		exp.Operation = lit
 		break
 	case token.EQL:
-		exp.operation = "=="
+		exp.Operation = "=="
 		break
 	case token.LSS:
-		exp.operation = "<"
+		exp.Operation = "<"
 		break
 	case token.GTR:
-		exp.operation = ">"
+		exp.Operation = ">"
 		break
 	case token.NEQ:
-		exp.operation = "!="
+		exp.Operation = "!="
 		break
 	case token.LEQ:
-		exp.operation = "<="
+		exp.Operation = "<="
 		break
 	case token.GEQ:
-		exp.operation = ">="
+		exp.Operation = ">="
 		break
 	default:
 		return nil, errors.New(fmt.Sprintf("operation is expected at %d", pos))
@@ -93,7 +89,7 @@ func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExp
 		return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
 	}
 
-	exp.value = lit[1 : len(lit)-1]
+	exp.Value = val
 
 	return StateEnd{}, nil
 }
