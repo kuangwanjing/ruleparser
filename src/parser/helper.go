@@ -1,5 +1,9 @@
 package parser
 
+import (
+	"strings"
+)
+
 var basicOperations []string = []string{
 	"==",
 	"!=",
@@ -47,7 +51,9 @@ func GetBasicOperation(op string) func(int) bool {
 	case ">=":
 		return BasicGreaterThanOrEqual
 	}
-	return nil
+	return func(int) bool {
+		return false
+	}
 }
 
 func BasicEqual(cmp int) bool {
@@ -72,4 +78,8 @@ func BasicLessThan(cmp int) bool {
 
 func BasicLessThanOrEqual(cmp int) bool {
 	return cmp < 0 || cmp == 0
+}
+
+func ConvertOperationName(op string) string {
+	return strings.ToUpper(string(op[0])) + op[1:]
 }

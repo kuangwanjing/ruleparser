@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"fmt"
+	"errors"
 	"go/scanner"
 	"go/token"
 	"reflect"
@@ -15,6 +15,11 @@ type RuleParser struct {
 	rules     map[string][]state.RuleExpr
 	ruleCount int
 	timeout   time.Duration
+}
+
+type RuleParserChannel struct {
+	rst bool
+	err error
 }
 
 func ParserInit(rules string) (*RuleParser, error) {
@@ -64,9 +69,9 @@ func rulesParser(rules string) (*RuleParser, error) {
 	return rp, nil
 }
 
-func (p *RuleParser) Examine(context interface{}) bool {
+func (p *RuleParser) Examine(context interface{}) (bool, error) {
 	count := 0
-	ch := make(chan bool)
+	ch := make(chan RuleParserChannel)
 
 	t := reflect.TypeOf(context)
 	val := reflect.ValueOf(context)
@@ -82,47 +87,77 @@ func (p *RuleParser) Examine(context interface{}) bool {
 	for i := 0; i < count; i++ {
 		select {
 		case rst := <-ch:
-			if !rst {
-				return false
+			if !rst.rst || rst.err != nil {
+				return rst.rst, rst.err
 			}
 		case <-time.After(p.timeout):
-			return false
+			return false, errors.New("timeout when parsing")
 		}
 	}
 
-	return true
+	return true, nil
 }
 
 func (p *RuleParser) createExamineFn(rule state.RuleExpr,
-	tn string, value reflect.Value, ch chan bool) func() {
+	tn string, value reflect.Value, ch chan RuleParserChannel) func() {
 	//op := rule.Operation
 	// basic data type:https://thorstenball.com/blog/2016/11/16/putting-eval-in-go/
 
+	// use the value of a rule as the argument of customized comparing function
+	in := make([]reflect.Value, 1)
+	in[0] = reflect.ValueOf(rule.Value)
+
+	var fnName = ""
+
 	if !isBasicDataType(tn) {
 		if isBasicOperation(rule.Operation) {
-			fn := value.MethodByName("Cmp")
-			if fn.IsValid() {
-				fmt.Println("has Cmp function")
-				return func() {
-					// use the value of a rule as the argument of customized comparing function
-					in := make([]reflect.Value, 1)
-					in[0] = reflect.ValueOf(rule.Value)
-					ret := fn.Call(in) // how to deal with errors?
-					retInt := ret[0].Interface().(int)
-					ch <- GetBasicOperation(rule.Operation)(retInt)
-				}
+			fnName = "Cmp"
+		} else {
+			fnName = ConvertOperationName(rule.Operation) // convert into capitalized form!
+		}
+		fn := value.MethodByName(fnName)
+		if !fn.IsValid() {
+			fnErr := errors.New(fnName + " function is not found for " + rule.Operand)
+			return func() {
+				ch <- RuleParserChannel{false, fnErr}
+			}
+		}
+		return func() {
+			ret := fn.Call(in)
+			retInt, err := p.getReturn(ret)
+			if err != nil {
+				ch <- RuleParserChannel{false, err}
+			}
+			if fnName == "Cmp" {
+				ch <- RuleParserChannel{GetBasicOperation(rule.Operation)(retInt), nil}
 			} else {
-				fmt.Println("doesn't have Cmp function")
-				return func() {
-					ch <- false
+				if retInt != 0 {
+					ch <- RuleParserChannel{false, nil}
+				} else {
+					ch <- RuleParserChannel{true, nil}
 				}
 			}
-		} else {
 		}
+	} else {
 	}
 
 	return func() {
-		ch <- true
+		ch <- RuleParserChannel{true, nil}
 	}
 
+}
+
+func (p *RuleParser) getReturn(ret []reflect.Value) (int, error) {
+	if len(ret) != 2 || reflect.TypeOf(ret[0].Interface()).Kind() != reflect.Int {
+		return -1, errors.New("function should return an integer and an error object")
+	}
+
+	retInt := ret[0].Interface().(int)
+
+	if ret[1].Interface() == nil {
+		return retInt, nil
+	} else {
+		retErr := ret[1].Interface().(error)
+		return retInt, retErr
+	}
 }
