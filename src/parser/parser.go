@@ -91,6 +91,7 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 				return rst.rst, rst.err
 			}
 		case <-time.After(p.timeout):
+			// the timeout is configuarable
 			return false, errors.New("timeout when parsing")
 		}
 	}
@@ -113,7 +114,7 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 		if isBasicOperation(rule.Operation) {
 			fnName = "Cmp"
 		} else {
-			fnName = ConvertOperationName(rule.Operation) // convert into capitalized form!
+			fnName = ConvertOperationName(rule.Operation) // convert the first letter into upper case, so that the call is made towards an accessible method
 		}
 		fn := value.MethodByName(fnName)
 		if !fn.IsValid() {
@@ -129,6 +130,7 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 				ch <- RuleParserChannel{false, err}
 			}
 			if fnName == "Cmp" {
+				// basic comparison is built in the package
 				ch <- RuleParserChannel{GetBasicOperation(rule.Operation)(retInt), nil}
 			} else {
 				if retInt != 0 {
