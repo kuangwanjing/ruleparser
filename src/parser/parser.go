@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"github.com/apaxa-go/eval"
 	"go/scanner"
 	"go/token"
 	"reflect"
@@ -109,12 +110,12 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 	// basic data type:https://thorstenball.com/blog/2016/11/16/putting-eval-in-go/
 
 	// use the value of a rule as the argument of customized comparing function
-	in := make([]reflect.Value, 1)
-	in[0] = reflect.ValueOf(rule.Value)
-
-	var fnName = ""
 
 	if !isBasicDataType(tn) {
+		var fnName = ""
+		in := make([]reflect.Value, 1)
+		in[0] = reflect.ValueOf(rule.Value)
+
 		if isBasicOperation(rule.Operation) {
 			fnName = "Cmp"
 		} else {
@@ -146,10 +147,19 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 			}
 		}
 	} else {
-	}
-
-	return func() {
-		ch <- RuleParserChannel{true, nil}
+		return func() {
+			src := "int8(1*(1+2))"
+			expr, err := ParseString(src, "")
+			if err != nil {
+				return err
+			}
+			r, err := expr.EvalToInterface(nil)
+			if err != nil {
+				return err
+			}
+			fmt.Printf("%v %T", r, r) // "3 int8"
+			ch <- RuleParserChannel{true, nil}
+		}
 	}
 
 }
