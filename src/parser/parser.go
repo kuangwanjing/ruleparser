@@ -69,6 +69,10 @@ func rulesParser(rules string) (*RuleParser, error) {
 	return rp, nil
 }
 
+func (p *RuleParser) SetTimeout(t time.Duration) {
+	p.timeout = t
+}
+
 func (p *RuleParser) Examine(context interface{}) (bool, error) {
 	count := 0
 	ch := make(chan RuleParserChannel)
@@ -114,7 +118,8 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 		if isBasicOperation(rule.Operation) {
 			fnName = "Cmp"
 		} else {
-			fnName = ConvertOperationName(rule.Operation) // convert the first letter into upper case, so that the call is made towards an accessible method
+			// convert the first letter into upper case, so that the call is made towards an accessible method
+			fnName = ConvertOperationName(rule.Operation)
 		}
 		fn := value.MethodByName(fnName)
 		if !fn.IsValid() {
