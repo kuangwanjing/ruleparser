@@ -11,6 +11,7 @@ type SoftwareInfo struct {
 	Sid     string  `rule:"sid"`
 	Ver     Version `rule:"ver"`
 	Channel string  `rule:"channel"`
+	Count   int     `rule:"cnt"`
 }
 
 type Version struct {
@@ -67,11 +68,12 @@ func (ver Version) In(val string) (int, error) {
 }
 
 func main() {
-	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`"
-	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play"}
+	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= 2"
+	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 2}
 	p, err := parser.ParserInit(rules)
 
 	fmt.Println(p)
+	fmt.Println(err)
 
 	if err == nil {
 		fmt.Println(p.Examine(software))

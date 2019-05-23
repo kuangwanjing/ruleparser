@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"errors"
+	"strconv"
 	"strings"
 )
 
@@ -82,4 +84,20 @@ func BasicLessThanOrEqual(cmp int) bool {
 
 func ConvertOperationName(op string) string {
 	return strings.ToUpper(string(op[0])) + op[1:]
+}
+
+// not implemented
+func BasicCmp(tn string, val interface{}, cmpVal string) (int, error) {
+	switch tn {
+	case "string":
+		return strings.Compare(val.(string), cmpVal), nil
+	case "int":
+		i, err := strconv.Atoi(cmpVal)
+		if err != nil {
+			return -1, err
+		}
+		return val.(int) - i, err
+	}
+
+	return 0, errors.New("type error for " + cmpVal)
 }

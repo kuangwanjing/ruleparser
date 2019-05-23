@@ -2,7 +2,6 @@ package parser
 
 import (
 	"errors"
-	"github.com/apaxa-go/eval"
 	"go/scanner"
 	"go/token"
 	"reflect"
@@ -96,7 +95,6 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 				return rst.rst, rst.err
 			}
 		case <-time.After(p.timeout):
-			// the timeout is configuarable
 			return false, errors.New("timeout when parsing")
 		}
 	}
@@ -106,10 +104,6 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 
 func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 	tn string, value reflect.Value, ch chan RuleParserChannel) func() {
-	//op := rule.Operation
-	// basic data type:https://thorstenball.com/blog/2016/11/16/putting-eval-in-go/
-
-	// use the value of a rule as the argument of customized comparing function
 
 	if !isBasicDataType(tn) {
 		var fnName = ""
@@ -148,17 +142,11 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 		}
 	} else {
 		return func() {
-			src := "int8(1*(1+2))"
-			expr, err := ParseString(src, "")
+			retInt, err := BasicCmp(tn, value.Interface(), rule.Value)
 			if err != nil {
-				return err
+				ch <- RuleParserChannel{false, err}
 			}
-			r, err := expr.EvalToInterface(nil)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("%v %T", r, r) // "3 int8"
-			ch <- RuleParserChannel{true, nil}
+			ch <- RuleParserChannel{GetBasicOperation(rule.Operation)(retInt), nil}
 		}
 	}
 

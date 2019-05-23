@@ -76,17 +76,24 @@ func (s StateOperation) Run(pos token.Pos, tok token.Token, lit string, exp *Rul
 func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExpr) (
 	State, error) {
 
-	if len(lit) <= 2 {
-		return nil, errors.New(fmt.Sprintf("operation is expected at %d but empty", pos))
-	}
+	var val string
 
-	if lit[0] != '`' || lit[len(lit)-1] != '`' {
-		return nil, errors.New(fmt.Sprintf("operation %s is not braced with '`'", lit))
-	}
+	if tok == token.STRING {
 
-	val := lit[1 : len(lit)-1]
-	if val == "" {
-		return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
+		if len(lit) <= 2 {
+			return nil, errors.New(fmt.Sprintf("operation is expected at %d but empty", pos))
+		}
+
+		if lit[0] != '`' || lit[len(lit)-1] != '`' {
+			return nil, errors.New(fmt.Sprintf("operation %s is not braced with '`'", lit))
+		}
+
+		val = lit[1 : len(lit)-1]
+		if val == "" {
+			return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
+		}
+	} else {
+		val = lit
 	}
 
 	exp.Value = val
