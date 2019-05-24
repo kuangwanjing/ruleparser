@@ -64,6 +64,10 @@ func rulesParser(rules string) (*RuleParser, error) {
 		curState = newState
 	}
 
+	if len(exprs) == 0 {
+		return nil, errors.New("no rules to parse")
+	}
+
 	rp := &RuleParser{exprs, count, 500 * time.Millisecond}
 
 	return rp, nil
@@ -141,6 +145,12 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 			}
 		}
 	} else {
+		if !isBasicOperation(rule.Operation) {
+			fnErr := errors.New(rule.Operation + " is not available for " + rule.Operand)
+			return func() {
+				ch <- RuleParserChannel{false, fnErr}
+			}
+		}
 		return func() {
 			retInt, err := BasicCmp(tn, value.Interface(), rule.Value)
 			if err != nil {
