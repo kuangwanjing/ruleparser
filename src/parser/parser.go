@@ -81,6 +81,24 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 	count := 0
 	ch := make(chan RuleParserChannel)
 
+	// testing whether context is a pointer. If it is, retrieve the element the pointer points to.
+	tmp := reflect.ValueOf(context)
+	ck := tmp.Kind()
+	if ck == reflect.Ptr || ck == reflect.Interface {
+		for ck == reflect.Ptr || ck == reflect.Interface {
+			tmp = tmp.Elem()
+			ck = tmp.Kind()
+		}
+		context = tmp.Interface()
+		ck = tmp.Kind()
+	}
+
+	// since this method handles struct only, it's necessary to determine whether the context is of basic data type.
+	// if it is, return an error
+	if isBasicDataType(ck.String()) {
+		return false, errors.New(ck.String() + " is not accepted")
+	}
+
 	t := reflect.TypeOf(context)
 	val := reflect.ValueOf(context)
 	for i := 0; i < t.NumField(); i++ {

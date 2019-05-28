@@ -92,7 +92,7 @@ func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExp
 		if val == "" {
 			return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
 		}
-	} else {
+	} else { // bugger when meets `<` etc.
 		val = lit
 	}
 
