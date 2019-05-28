@@ -37,6 +37,8 @@ var basicDataTypes []string = []string{
 	"array",
 	"float32",
 	"float64",
+	"interface",
+	"chan",
 }
 
 func isBasicOperation(op string) bool {
@@ -58,7 +60,8 @@ func isBasicDataType(tn string) bool {
 }
 
 func isUncomparableDataType(tn string) bool {
-	return tn == "array" || tn == "map" || tn == "slice" || tn == "ptr"
+	return tn == "array" || tn == "map" || tn == "slice" || tn == "ptr" ||
+		tn == "interface" || tn == "chan"
 }
 
 func GetBasicOperation(op string) func(int) bool {
@@ -110,8 +113,8 @@ func ConvertOperationName(op string) string {
 }
 
 // not implemented
-func BasicCmp(tn string, val interface{}, cmpVal string) (int, error) {
-	switch tn {
+func BasicCmp(k string, val interface{}, cmpVal string) (int, error) {
+	switch k {
 	case "string":
 		return strings.Compare(val.(string), cmpVal), nil
 	case "int":

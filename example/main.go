@@ -8,10 +8,10 @@ import (
 )
 
 type SoftwareInfo struct {
-	Sid     string  `rule:"sid"`
-	Ver     Version `rule:"ver"`
-	Channel string  `rule:"channel"`
-	Count   int     `rule:"cnt"`
+	Sid     string   `rule:"sid"`
+	Ver     *Version `rule:"ver"`
+	Channel string   `rule:"channel"`
+	Count   int      `rule:"cnt"`
 }
 
 type Version struct {
@@ -55,7 +55,7 @@ func (ver Version) Cmp(val string) (int, error) {
 	return 0, nil
 }
 
-func (ver Version) In(val string) (int, error) {
+func (ver Version) In(val string) (int, error) { // the callee must not be a pointer, what is it called?
 	vs := strings.Split(val, ",")
 
 	for _, v := range vs {
@@ -69,7 +69,7 @@ func (ver Version) In(val string) (int, error) {
 
 func main() {
 	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= 2"
-	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 3}
+	software := SoftwareInfo{"134efa", &Version{"2.5.0"}, "google play", 3}
 	p, err := parser.ParserInit(rules)
 
 	fmt.Println(p)
