@@ -28,10 +28,12 @@ var basicDataTypes []string = []string{
 	"uint32",
 	"uint64",
 	"uint64",
+	"uintptr",
 	"string",
 	"array",
 	"map",
 	"slice",
+	"ptr",
 	"array",
 	"float32",
 	"float64",
@@ -53,6 +55,10 @@ func isBasicDataType(tn string) bool {
 		}
 	}
 	return false
+}
+
+func isUncomparableDataType(tn string) bool {
+	return tn == "array" || tn == "map" || tn == "slice" || tn == "ptr"
 }
 
 func GetBasicOperation(op string) func(int) bool {

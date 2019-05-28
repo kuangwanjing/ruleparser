@@ -105,7 +105,7 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 		field := t.Field(i)
 		tag := field.Tag.Get(tagName)
 		for _, rule := range p.rules[tag] {
-			go p.createExamineFn(rule, field.Type.Name(), val.Field(i), ch)()
+			go p.createExamineFn(rule, field.Type, val.Field(i), ch)()
 			count += 1
 		}
 	}
@@ -125,9 +125,11 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 }
 
 func (p *RuleParser) createExamineFn(rule state.RuleExpr,
-	tn string, value reflect.Value, ch chan RuleParserChannel) func() {
+	t reflect.Type, value reflect.Value, ch chan RuleParserChannel) func() {
 
-	if !isBasicDataType(tn) {
+	k := t.Kind().String()
+
+	if !isBasicDataType(k) {
 		var fnName = ""
 		in := make([]reflect.Value, 1)
 		in[0] = reflect.ValueOf(rule.Value)
@@ -163,14 +165,14 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 			}
 		}
 	} else {
-		if !isBasicOperation(rule.Operation) {
+		if !isBasicOperation(rule.Operation) || isUncomparableDataType(k) {
 			fnErr := errors.New(rule.Operation + " is not available for " + rule.Operand)
 			return func() {
 				ch <- RuleParserChannel{false, fnErr}
 			}
 		}
 		return func() {
-			retInt, err := BasicCmp(tn, value.Interface(), rule.Value)
+			retInt, err := BasicCmp(k, value.Interface(), rule.Value)
 			if err != nil {
 				ch <- RuleParserChannel{false, err}
 			}

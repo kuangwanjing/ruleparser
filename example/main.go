@@ -69,7 +69,7 @@ func (ver Version) In(val string) (int, error) {
 
 func main() {
 	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= 2"
-	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 1}
+	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 3}
 	p, err := parser.ParserInit(rules)
 
 	fmt.Println(p)
@@ -77,6 +77,8 @@ func main() {
 
 	if err == nil {
 		fmt.Println(p.Examine(&software))
+		fmt.Println(p.Examine(software))
 		fmt.Println(p.Examine([]string{"abc"}))
+		fmt.Println(p.Examine(float32(13.22)))
 	}
 }
