@@ -112,7 +112,6 @@ func ConvertOperationName(op string) string {
 	return strings.ToUpper(string(op[0])) + op[1:]
 }
 
-// not implemented
 func BasicCmp(val interface{}, cmpVal string) (int, error) {
 
 	k := reflect.TypeOf(val).Kind()

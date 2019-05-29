@@ -56,7 +56,7 @@ func (ver *Version) Cmp(val string) (int, error) {
 	return 0, nil
 }
 
-func (ver Version) In(val string) (int, error) { // the callee must not be a pointer, what is it called?
+func (ver Version) In(val string) (int, error) {
 	vs := strings.Split(val, ",")
 
 	for _, v := range vs {
@@ -69,7 +69,7 @@ func (ver Version) In(val string) (int, error) { // the callee must not be a poi
 }
 
 func main() {
-	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= 2;f==0"
+	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= -2;f==0"
 	software := SoftwareInfo{"134efa", &Version{"2.5.0"}, "google play", 3, false}
 	p, err := parser.ParserInit(rules)
 

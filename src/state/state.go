@@ -77,17 +77,22 @@ func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExp
 		if val == "" {
 			return nil, errors.New(fmt.Sprintf("operation %s is empty", lit))
 		}
+		exp.Value = val
+
+		return StateEnd{}, nil
+
 	} else if tok == token.INT || tok == token.FLOAT {
-		val = lit
+		exp.Value = exp.Value + lit
+		return StateEnd{}, nil
 	} else if lit == "true" || lit == "false" {
-		val = lit
-	} else {
-		return nil, errors.New(fmt.Sprintf("%s is not accepted as the value", tok.String()))
+		exp.Value = lit
+		return StateEnd{}, nil
+	} else if tok == token.SUB {
+		exp.Value = "-"
+		return StateValue{}, nil
 	}
 
-	exp.Value = val
-
-	return StateEnd{}, nil
+	return nil, errors.New(fmt.Sprintf("%s is not accepted as the value", tok.String()))
 }
 
 func (s StateEnd) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExpr) (
