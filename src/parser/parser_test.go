@@ -17,7 +17,7 @@ func TestRulesWithIncorrectSyntax(t *testing.T) {
 		{"a <", "doesn't contain value"},
 		{"a 10", "doesn't contain operation"},
 		{"a < 10, b > 100", "doesn't have semicolumn as a separator"},
-		//{"a < 10; b in giergg", "doesn't have `` to quote the value"}, // bugger
+		{"a < 10; b in giergg", "doesn't have `` to quote the value"},
 	}
 
 	for _, rule := range rules {

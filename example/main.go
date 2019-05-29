@@ -18,7 +18,7 @@ type Version struct {
 	value string
 }
 
-func (ver Version) Cmp(val string) (int, error) {
+func (ver *Version) Cmp(val string) (int, error) {
 	vs1 := strings.Split(ver.value, ".")
 	vs2 := strings.Split(val, ".")
 	c1 := 0
