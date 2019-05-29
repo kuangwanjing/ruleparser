@@ -186,7 +186,7 @@ func (p *RuleParser) createExamineFn(rule state.RuleExpr,
 			}
 		}
 		return func() {
-			retInt, err := BasicCmp(k, value.Interface(), rule.Value)
+			retInt, err := BasicCmp(value.Interface(), rule.Value)
 			if err != nil {
 				ch <- RuleParserChannel{false, err}
 			}

@@ -79,6 +79,8 @@ func (s StateValue) Run(pos token.Pos, tok token.Token, lit string, exp *RuleExp
 		}
 	} else if tok == token.INT || tok == token.FLOAT {
 		val = lit
+	} else if lit == "true" || lit == "false" {
+		val = lit
 	} else {
 		return nil, errors.New(fmt.Sprintf("%s is not accepted as the value", tok.String()))
 	}

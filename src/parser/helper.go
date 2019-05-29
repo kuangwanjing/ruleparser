@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -26,7 +27,6 @@ var basicDataTypes []string = []string{
 	"uint8",
 	"uint16",
 	"uint32",
-	"uint64",
 	"uint64",
 	"uintptr",
 	"string",
@@ -113,16 +113,62 @@ func ConvertOperationName(op string) string {
 }
 
 // not implemented
-func BasicCmp(k string, val interface{}, cmpVal string) (int, error) {
+func BasicCmp(val interface{}, cmpVal string) (int, error) {
+
+	k := reflect.TypeOf(val).Kind()
+
 	switch k {
-	case "string":
+	case reflect.String:
 		return strings.Compare(val.(string), cmpVal), nil
-	case "int":
-		i, err := strconv.Atoi(cmpVal)
+	case reflect.Bool:
+		boolVal, err := strconv.ParseBool(cmpVal)
 		if err != nil {
 			return -1, err
 		}
-		return val.(int) - i, err
+		if val.(bool) == boolVal {
+			return 0, nil
+		} else {
+			return 1, nil
+		}
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int, reflect.Int64:
+		int64Val, err := strconv.ParseInt(cmpVal, 10, 64)
+		if err != nil {
+			return -1, err
+		}
+		v := reflect.ValueOf(val).Int()
+		if v == int64Val {
+			return 0, nil
+		} else if v < int64Val {
+			return -1, nil
+		} else {
+			return 1, nil
+		}
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		uint64Val, err := strconv.ParseUint(cmpVal, 10, 64)
+		if err != nil {
+			return -1, err
+		}
+		v := reflect.ValueOf(val).Uint()
+		if v == uint64Val {
+			return 0, nil
+		} else if v < uint64Val {
+			return -1, nil
+		} else {
+			return 1, nil
+		}
+	case reflect.Float32, reflect.Float64:
+		float64Val, err := strconv.ParseFloat(cmpVal, 64)
+		if err != nil {
+			return -1, err
+		}
+		v := reflect.ValueOf(val).Float()
+		if v == float64Val {
+			return 0, nil
+		} else if v < float64Val {
+			return -1, nil
+		} else {
+			return 1, nil
+		}
 	}
 
 	return 0, errors.New("type error for " + cmpVal)
