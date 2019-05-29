@@ -49,26 +49,11 @@ func (s StateOperation) Run(pos token.Pos, tok token.Token, lit string, exp *Rul
 	case token.IDENT:
 		exp.Operation = lit
 		break
-	case token.EQL:
-		exp.Operation = "=="
-		break
-	case token.LSS:
-		exp.Operation = "<"
-		break
-	case token.GTR:
-		exp.Operation = ">"
-		break
-	case token.NEQ:
-		exp.Operation = "!="
-		break
-	case token.LEQ:
-		exp.Operation = "<="
-		break
-	case token.GEQ:
-		exp.Operation = ">="
+	case token.EQL, token.LSS, token.GTR, token.NEQ, token.LEQ, token.GEQ:
+		exp.Operation = tok.String()
 		break
 	default:
-		return nil, errors.New(fmt.Sprintf("operation is expected at %d", pos))
+		return nil, errors.New(fmt.Sprintf("operation is expected at %d, but %s is found", pos, tok.String()))
 	}
 	return StateValue{}, nil
 }
