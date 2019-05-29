@@ -107,12 +107,6 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 		for _, rule := range p.rules[tag] {
 			fk := field.Type.Kind()
 			fv := val.Field(i)
-			if fk == reflect.Ptr {
-				for fk == reflect.Ptr {
-					fv = fv.Elem()
-					fk = fv.Kind()
-				}
-			}
 			go p.createExamineFn(rule, fk, fv, ch)()
 			count += 1
 		}
@@ -133,9 +127,21 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 }
 
 func (p *RuleParser) createExamineFn(rule state.RuleExpr,
-	t reflect.Kind, value reflect.Value, ch chan RuleParserChannel) func() {
+	kind reflect.Kind, value reflect.Value, ch chan RuleParserChannel) func() {
 
-	k := t.String()
+	var k string
+
+	if kind == reflect.Ptr {
+		tv := value
+		tk := kind
+		for tk == reflect.Ptr {
+			tv = tv.Elem()
+			tk = tv.Kind()
+		}
+		k = tk.String()
+	} else {
+		k = kind.String()
+	}
 
 	if !isBasicDataType(k) {
 		var fnName = ""
