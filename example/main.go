@@ -19,7 +19,7 @@ type Version struct {
 	value string
 }
 
-func (ver *Version) Cmp(val string) (int, error) {
+func (ver Version) Cmp(val string) (int, error) {
 	vs1 := strings.Split(ver.value, ".")
 	vs2 := strings.Split(val, ".")
 	c1 := 0
@@ -70,7 +70,7 @@ func (ver Version) In(val string) (int, error) {
 
 func main() {
 	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= -2;f==0"
-	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 3, false}
+	software := SoftwareInfo{"134efa", &Version{"2.5.0"}, "google play", 3, false}
 	p, err := parser.ParserInit(rules)
 
 	fmt.Println(p)
