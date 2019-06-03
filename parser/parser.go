@@ -2,10 +2,10 @@ package parser
 
 import (
 	"errors"
+	"github.com/kuangwanjing/ruleparser/state"
 	"go/scanner"
 	"go/token"
 	"reflect"
-	"state"
 	"time"
 )
 
