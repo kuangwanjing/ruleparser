@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"parser"
+	"github.com/kuangwanjing/ruleparser/parser"
 	"strconv"
 	"strings"
 )
