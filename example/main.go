@@ -8,11 +8,11 @@ import (
 )
 
 type SoftwareInfo struct {
-	Sid     string   `rule:"sid"`
-	Ver     *Version `rule:"ver"`
-	Channel string   `rule:"channel"`
-	Count   int      `rule:"cnt"`
-	F       bool     `rule:"f"`
+	Sid     string  `rule:"sid"`
+	Ver     Version `rule:"ver"`
+	Channel string  `rule:"channel"`
+	Count   int     `rule:"cnt"`
+	F       bool    `rule:"f"`
 }
 
 type Version struct {
@@ -70,7 +70,7 @@ func (ver Version) In(val string) (int, error) {
 
 func main() {
 	rules := "ver < `3.5.0`;ver > `1.5.0`;ver in `2.5.0,2.5.1`;channel==`google play`;cnt >= -2;f==0"
-	software := SoftwareInfo{"134efa", &Version{"2.5.0"}, "google play", 3, false}
+	software := SoftwareInfo{"134efa", Version{"2.5.0"}, "google play", 3, false}
 	p, err := parser.ParserInit(rules)
 
 	fmt.Println(p)
