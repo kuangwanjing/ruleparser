@@ -8,11 +8,11 @@ import (
 )
 
 type SoftwareInfo struct {
-	Sid     string  `rule:"sid"`
-	Ver     Version `rule:"ver"`
-	Channel string  `rule:"channel"`
-	Count   int     `rule:"cnt"`
-	F       bool    `rule:"f"`
+	Sid     string   `rule:"sid"`
+	Ver     *Version `rule:"ver"`
+	Channel string   `rule:"channel"`
+	Count   int      `rule:"cnt"`
+	F       bool     `rule:"f"`
 }
 
 type Version struct {
