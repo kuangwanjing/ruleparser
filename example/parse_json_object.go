@@ -1,4 +1,4 @@
-// This example shows a more realistic scenario that applications get data in json format and filter the data by its need.
+// This example shows a realistic scenario when applications get data in json format and filter the data by its need.
 package main
 
 import (
