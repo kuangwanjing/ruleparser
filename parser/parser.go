@@ -104,6 +104,9 @@ func (p *RuleParser) Examine(context interface{}) (bool, error) {
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		tag := field.Tag.Get(tagName)
+		if tag == "" || tag == "-" {
+			continue
+		}
 		for _, rule := range p.rules[tag] {
 			fk := field.Type.Kind()
 			fv := val.Field(i)
