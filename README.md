@@ -1,8 +1,8 @@
 # ruleparser
 
-Package ruleparser provide a generic tool to filter data with predefined conditions, which are called rules here.  For example, if a cross-platform application is required to handle the variance of platform, software version, os version, the application provider can construct different variants of configuration with conditions denoting what platform the configuration applies for. Hence, a rule-parser which understands the rules and the current context and determine whether the context matches up with the rules, is needed. This is what ruleparser does. 
+Package ruleparser provide a generic tool to filter data with predefined conditions, which are called rules here.  For example, if a cross-platform application is required to handle the variance of platform, software version, os version, the application provider can construct different variants of configuration with conditions denoting what platform the configuration applies for. Hence, a rule-parser which understands the rules and the current context and determines whether the context matches up with the rules, is needed. This is what ruleparser does. 
 
-### Installment
+## Installment
 
 download the package:
 
@@ -10,9 +10,9 @@ download the package:
 go get github.com/kuangwanjing/ruleparser
 ```
 
-### Usage
+## How to use the parser? 4 steps:
 
-#### Input the rules to examine and get a parser. 
+### Step 1: Input the rules to examine and get a parser. 
 
 ```go
 import (
@@ -47,7 +47,7 @@ The value should be designed to match up with the operand. It can be any integer
 
 Values of bool, int, int8, int16, int32, int64,uint, uint32,uint64,string,float32,float64 are legal as value in the rule. **Any string should be enclosed by "`".**
 
-#### Define the struct for context, denote struct tags for parsing
+### Step 2: Define the struct for context, point out the struct tags for parsing
 
 In this package, a special struct tag "rule" is used to point out the fields of a struct to be parsed and the struct tags are used to map the field with specific rules. For example:
 
@@ -74,7 +74,7 @@ software := SoftwareInfo{Version{"1.3.5"},"android",20,Field2{"val3"}}
 
 Basic data type like int and string can be compared if the operation is one of  "==", "!=", ">", ">=", "<", "<=". For example, the field "Platform" and "OtherField1" can be compared with rules platform == \`android\` and field1 > 10 by the parser.
 
-### Define customized operation
+### Step 3: Define customized operation
 
 #### I. Value-Comparison operation with object method. 
 
@@ -123,7 +123,7 @@ func (f Field2) In (pattern string) (int, error) {
 
 This is very useful when the operation is about regular expression matching, a remote procedure checking. 
 
-### Run the parser
+### Step 4: Run the parser
 
 ```go
 // input the software object 
@@ -135,7 +135,7 @@ if err != nil {
 }
 ```
 
-### Describe possible errors from the parser
+#### Here listing possible errors from the parser
 
 1. The value of the rule doesn't match with the field of the context. For example, if a field is defined as integer but a float number is represent in the rule, the comparison would go wrong. 
 2. The comparison method is missing. For example, the missing of Cmp method for field Ver or  In method for field OtherField2 leads to a method missing error.
