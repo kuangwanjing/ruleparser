@@ -121,7 +121,7 @@ func (f Field2) In (pattern string) (int, error) {
 }
 ```
 
-This is very useful when the operation is about regular expression matching, a remote procedure checking. 
+This is very useful when the operation is about regular expression matching or calling a remote procedure to do the checking. 
 
 ### Step 4: Run the parser
 
@@ -137,8 +137,8 @@ if err != nil {
 
 #### Here listing possible errors from the parser
 
-1. The value of the rule doesn't match with the field of the context. For example, if a field is defined as integer but a float number is represent in the rule, the comparison would go wrong. 
-2. The comparison method is missing. For example, the missing of Cmp method for field Ver or  In method for field OtherField2 leads to a method missing error.
+1. The value of the rule doesn't match with the field of the context. For example, if a field is defined as integer but a float number is represented in the rule, the comparison would go wrong. 
+2. The comparison method is missing. For example, the missing of Cmp method for field Ver or In method for field OtherField2 leads to a method missing error.
 3. The comparison method is timeout. If the method is dealing with a RPC and the request goes timeout, the parser aborts the whole procedure and returns an error. The default timeout time is 500ms but is changeable via SetTimeout method of the parser which accepts a time.Duration object. 
 4. Input a non-object value as the Examine argument. For example, input an integer to the parser.
 5. Binding the comparison method with incorrect receiver. For example, if the "Cmp" method is bound to a pointer receiver but the field defined in the struct is in value style, the parser can not detect the method. For example:
